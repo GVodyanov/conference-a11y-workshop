@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.3",
     "info": {
-        "title": "app_template",
+        "title": "chaotic_file_cleaner",
         "version": "0.0.1",
-        "description": "An example summary",
+        "description": "Spin a wheel and let fate delete one of your files",
         "license": {
             "name": "AGPL-3.0-or-later"
         }
@@ -20,6 +20,31 @@
             }
         },
         "schemas": {
+            "File": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "path",
+                    "size"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
             "OCSMeta": {
                 "type": "object",
                 "required": [
@@ -47,10 +72,10 @@
         }
     },
     "paths": {
-        "/ocs/v2.php/apps/app_template/api": {
+        "/ocs/v2.php/apps/chaotic_file_cleaner/api/wheel": {
             "get": {
-                "operationId": "api-index",
-                "summary": "An example API endpoint",
+                "operationId": "api-wheel",
+                "summary": "Get a random selection of the current user's files to put on the wheel",
                 "tags": [
                     "api"
                 ],
@@ -64,6 +89,16 @@
                 ],
                 "parameters": [
                     {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "How many files to place on the wheel, between 2 and 40",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "default": 12
+                        }
+                    },
+                    {
                         "name": "OCS-APIRequest",
                         "in": "header",
                         "description": "Required to be true for the API request to pass",
@@ -76,7 +111,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Data returned",
+                        "description": "The wheel candidates",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -98,14 +133,213 @@
                                                 "data": {
                                                     "type": "object",
                                                     "required": [
-                                                        "message"
+                                                        "files",
+                                                        "total"
                                                     ],
                                                     "properties": {
-                                                        "message": {
-                                                            "type": "string"
+                                                        "files": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/components/schemas/File"
+                                                            }
+                                                        },
+                                                        "total": {
+                                                            "type": "integer",
+                                                            "format": "int64"
                                                         }
                                                     }
                                                 }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No user is logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Current user is not logged in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/ocs/v2.php/apps/chaotic_file_cleaner/api/files/{fileId}": {
+            "delete": {
+                "operationId": "api-destroy",
+                "summary": "Delete the file the wheel landed on",
+                "tags": [
+                    "api"
+                ],
+                "security": [
+                    {
+                        "bearer_auth": []
+                    },
+                    {
+                        "basic_auth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "fileId",
+                        "in": "path",
+                        "description": "The id of the doomed file",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "OCS-APIRequest",
+                        "in": "header",
+                        "description": "Required to be true for the API request to pass",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The file that was deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "deleted"
+                                                    ],
+                                                    "properties": {
+                                                        "deleted": {
+                                                            "$ref": "#/components/schemas/File"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "No user is logged in, or the file may not be deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The file does not exist for this user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "ocs"
+                                    ],
+                                    "properties": {
+                                        "ocs": {
+                                            "type": "object",
+                                            "required": [
+                                                "meta",
+                                                "data"
+                                            ],
+                                            "properties": {
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/OCSMeta"
+                                                },
+                                                "data": {}
                                             }
                                         }
                                     }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OCA\AppTemplate\Controller;
+namespace OCA\ChaoticFileCleaner\Controller;
 
-use OCA\AppTemplate\AppInfo\Application;
+use OCA\ChaoticFileCleaner\AppInfo\Application;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\FrontpageRoute;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;

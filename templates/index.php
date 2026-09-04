@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use OCP\Util;
 
-Util::addScript(OCA\AppTemplate\AppInfo\Application::APP_ID, OCA\AppTemplate\AppInfo\Application::APP_ID . '-main');
-Util::addStyle(OCA\AppTemplate\AppInfo\Application::APP_ID, OCA\AppTemplate\AppInfo\Application::APP_ID . '-main');
+Util::addScript(OCA\ChaoticFileCleaner\AppInfo\Application::APP_ID, OCA\ChaoticFileCleaner\AppInfo\Application::APP_ID . '-main');
+Util::addStyle(OCA\ChaoticFileCleaner\AppInfo\Application::APP_ID, OCA\ChaoticFileCleaner\AppInfo\Application::APP_ID . '-main');
 
 ?>
 
-<div id="app_template"></div>
+<div id="chaotic_file_cleaner"></div>
