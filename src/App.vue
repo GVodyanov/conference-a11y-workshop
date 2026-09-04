@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import NcAppContent from '@nextcloud/vue/components/NcAppContent'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcContent from '@nextcloud/vue/components/NcContent'
@@ -7,25 +7,63 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { showError } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
-import FileWheel from './components/FileWheel.vue'
-import { deleteFile, fetchWheel, type CleanableFile } from './api'
+import SpinWheel, { type WheelSegment } from './components/SpinWheel.vue'
+import HistoryDialog from './components/HistoryDialog.vue'
+import SettingsDialog from './components/SettingsDialog.vue'
+import RestoreGambleDialog from './components/RestoreGambleDialog.vue'
+import { deleteFile, fetchWheel, isNotFound, type CleanableFile } from './api'
 
 /** How many files fate gets to choose between in one round. */
 const WHEEL_SIZE = 12
 
-const wheel = ref<InstanceType<typeof FileWheel> | null>(null)
+const wheel = ref<InstanceType<typeof SpinWheel> | null>(null)
 
 const files = ref<CleanableFile[]>([])
 const totalFiles = ref(0)
 const loading = ref(true)
-const loadError = ref(false)
+const loadError = ref<'' | 'generic' | 'folder'>('')
+const activeFolder = ref('')
+const activeFilter = ref('')
 const phase = ref<'idle' | 'spinning' | 'deleting'>('idle')
 const lastDeleted = ref<CleanableFile | null>(null)
 const announcement = ref('')
+const historyOpen = ref(false)
+const settingsOpen = ref(false)
+const gambleOpen = ref(false)
+/**
+ * Path being gambled for, held separately from `lastDeleted` so that winning
+ * the spin — which clears the result card — does not tear the dialog down
+ * before it can say so.
+ */
+const gamblePath = ref('')
+const canRestore = ref(false)
 
 const busy = computed(() => phase.value !== 'idle')
-const isEmpty = computed(() => !loading.value && !loadError.value && files.value.length === 0)
-const canSpin = computed(() => !loading.value && !loadError.value && !busy.value && files.value.length > 0)
+const isEmpty = computed(() => !loading.value && loadError.value === '' && files.value.length === 0)
+const canSpin = computed(() => !loading.value && loadError.value === '' && !busy.value && files.value.length > 0)
+const isNarrowed = computed(() => activeFolder.value !== '' || activeFilter.value !== '')
+
+/** The wheel only needs a key and something to write on each slice. */
+const wheelSegments = computed<WheelSegment[]>(() =>
+	files.value.map((file) => ({ key: String(file.id), label: file.name })),
+)
+
+/** A short description of the rules currently in force, if any. */
+const scopeLabel = computed(() => {
+	if (activeFolder.value !== '' && activeFilter.value !== '') {
+		return t('chaotic_file_cleaner', 'Only in {folder}, and only names containing “{filter}”', {
+			folder: activeFolder.value,
+			filter: activeFilter.value,
+		})
+	}
+	if (activeFolder.value !== '') {
+		return t('chaotic_file_cleaner', 'Only in {folder}', { folder: activeFolder.value })
+	}
+	if (activeFilter.value !== '') {
+		return t('chaotic_file_cleaner', 'Only names containing “{filter}”', { filter: activeFilter.value })
+	}
+	return ''
+})
 
 const buttonLabel = computed(() => {
 	if (phase.value === 'spinning') {
@@ -46,14 +84,18 @@ async function load(quiet = false): Promise<void> {
 	if (!quiet) {
 		loading.value = true
 	}
-	loadError.value = false
+	loadError.value = ''
 
 	try {
 		const result = await fetchWheel(WHEEL_SIZE)
 		files.value = result.files
 		totalFiles.value = result.total
+		activeFolder.value = result.folder
+		activeFilter.value = result.nameFilter
 	} catch (error) {
-		loadError.value = true
+		// A 404 here means the folder in the settings has been moved or deleted.
+		loadError.value = isNotFound(error) ? 'folder' : 'generic'
+		files.value = []
 		console.error('[chaotic_file_cleaner] Could not load the wheel', error)
 	} finally {
 		loading.value = false
@@ -69,6 +111,7 @@ async function clean(): Promise<void> {
 	}
 
 	lastDeleted.value = null
+	canRestore.value = false
 
 	const index = Math.floor(Math.random() * files.value.length)
 	const doomed = files.value[index]
@@ -81,7 +124,9 @@ async function clean(): Promise<void> {
 	phase.value = 'deleting'
 
 	try {
-		lastDeleted.value = await deleteFile(doomed.id)
+		const outcome = await deleteFile(doomed.id)
+		lastDeleted.value = outcome.deleted
+		canRestore.value = outcome.canRestore
 		announcement.value = t(
 			'chaotic_file_cleaner',
 			'The wheel landed on {name}. It has been deleted.',
@@ -96,6 +141,37 @@ async function clean(): Promise<void> {
 	}
 
 	// Reload so the wheel never offers a file that is already gone.
+	await load(true)
+}
+
+/**
+ * Offer fate a second opinion on the file that was just deleted.
+ */
+function openGamble(): void {
+	if (lastDeleted.value === null) {
+		return
+	}
+
+	gamblePath.value = lastDeleted.value.path
+	gambleOpen.value = true
+}
+
+// Only let go of the dialog once it has actually been dismissed.
+watch(gambleOpen, (isOpen) => {
+	if (!isOpen) {
+		gamblePath.value = ''
+	}
+})
+
+/**
+ * Fate relented: drop the result card and put the file back on the wheel.
+ *
+ * @param path The path that came back
+ */
+async function onRestored(path: string): Promise<void> {
+	announcement.value = t('chaotic_file_cleaner', '{name} was restored.', { name: path })
+	lastDeleted.value = null
+	canRestore.value = false
 	await load(true)
 }
 
@@ -114,17 +190,46 @@ onMounted(() => load())
 						{{ t('chaotic_file_cleaner', 'Press the button. The wheel picks one of your files, and that file is gone.') }}
 					</p>
 
-					<NcButton
-						class="cleaner__button"
-						variant="primary"
-						size="large"
-						:disabled="!canSpin"
-						@click="clean">
-						<template v-if="busy" #icon>
-							<NcLoadingIcon :size="20" />
-						</template>
-						{{ buttonLabel }}
-					</NcButton>
+					<p v-if="scopeLabel !== ''" class="cleaner__scope">
+						{{ scopeLabel }}
+					</p>
+
+					<div class="cleaner__actions">
+						<NcButton
+							class="cleaner__button"
+							variant="primary"
+							size="large"
+							:disabled="!canSpin"
+							@click="clean">
+							<template v-if="busy" #icon>
+								<NcLoadingIcon :size="20" />
+							</template>
+							{{ buttonLabel }}
+						</NcButton>
+
+						<NcButton
+							variant="secondary"
+							size="large"
+							@click="historyOpen = true">
+							{{ t('chaotic_file_cleaner', 'History') }}
+						</NcButton>
+
+						<NcButton
+							variant="tertiary"
+							size="large"
+							:aria-label="t('chaotic_file_cleaner', 'Cleaning rules')"
+							@click="settingsOpen = true">
+							<template #icon>
+								<svg
+									viewBox="0 0 24 24"
+									width="20"
+									height="20"
+									aria-hidden="true">
+									<path fill="currentColor" d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+								</svg>
+							</template>
+						</NcButton>
+					</div>
 				</div>
 
 				<div class="cleaner__feedback">
@@ -134,7 +239,17 @@ onMounted(() => load())
 					</p>
 
 					<NcNoteCard
-						v-else-if="loadError"
+						v-else-if="loadError === 'folder'"
+						type="error"
+						:heading="t('chaotic_file_cleaner', 'That folder is gone')">
+						{{ t('chaotic_file_cleaner', 'The folder in your cleaning rules no longer exists. Pick another one.') }}
+						<NcButton class="cleaner__retry" variant="secondary" @click="settingsOpen = true">
+							{{ t('chaotic_file_cleaner', 'Open cleaning rules') }}
+						</NcButton>
+					</NcNoteCard>
+
+					<NcNoteCard
+						v-else-if="loadError === 'generic'"
 						type="error"
 						:heading="t('chaotic_file_cleaner', 'The wheel is stuck')">
 						{{ t('chaotic_file_cleaner', 'Your files could not be loaded.') }}
@@ -147,7 +262,15 @@ onMounted(() => load())
 						v-else-if="isEmpty"
 						type="info"
 						:heading="t('chaotic_file_cleaner', 'Nothing left to lose')">
-						{{ t('chaotic_file_cleaner', 'You have no files that can be deleted. Impressively tidy.') }}
+						<template v-if="isNarrowed">
+							{{ t('chaotic_file_cleaner', 'No file matches your cleaning rules.') }}
+							<NcButton class="cleaner__retry" variant="secondary" @click="settingsOpen = true">
+								{{ t('chaotic_file_cleaner', 'Open cleaning rules') }}
+							</NcButton>
+						</template>
+						<template v-else>
+							{{ t('chaotic_file_cleaner', 'You have no files that can be deleted. Impressively tidy.') }}
+						</template>
 					</NcNoteCard>
 
 					<NcNoteCard
@@ -158,13 +281,26 @@ onMounted(() => load())
 						<span class="cleaner__victim-note">
 							{{ t('chaotic_file_cleaner', 'Deleted. Check the trash bin if you regret this.') }}
 						</span>
+						<NcButton
+							v-if="canRestore"
+							class="cleaner__retry"
+							variant="secondary"
+							@click="openGamble">
+							{{ t('chaotic_file_cleaner', 'Restore') }}
+						</NcButton>
 					</NcNoteCard>
 
 					<p v-else-if="totalFiles > files.length" class="cleaner__hint">
-						{{ t('chaotic_file_cleaner', '{count} of your {total} files are on the wheel.', {
-							count: files.length,
-							total: totalFiles,
-						}) }}
+						<!-- Once rules are in force the total is the matching count, not everything. -->
+						{{ isNarrowed
+							? t('chaotic_file_cleaner', '{count} of the {total} matching files are on the wheel.', {
+								count: files.length,
+								total: totalFiles,
+							})
+							: t('chaotic_file_cleaner', '{count} of your {total} files are on the wheel.', {
+								count: files.length,
+								total: totalFiles,
+							}) }}
 					</p>
 				</div>
 
@@ -182,11 +318,21 @@ onMounted(() => load())
 					{{ announcement }}
 				</p>
 
-				<FileWheel
+				<HistoryDialog v-model="historyOpen" />
+
+				<SettingsDialog v-model="settingsOpen" @saved="load()" />
+
+				<RestoreGambleDialog
+					v-if="gamblePath !== ''"
+					v-model="gambleOpen"
+					:path="gamblePath"
+					@restored="onRestored" />
+
+				<SpinWheel
 					v-if="files.length > 0"
 					ref="wheel"
 					class="cleaner__wheel"
-					:files="files" />
+					:segments="wheelSegments" />
 			</div>
 		</NcAppContent>
 	</NcContent>
@@ -248,7 +394,23 @@ onMounted(() => load())
 	color: var(--color-text-maxcontrast);
 }
 
-.cleaner__button {
+/* The rules in force, so it is never a mystery why the wheel looks empty. */
+.cleaner__scope {
+	margin: 0;
+	padding: 4px 12px;
+	border-radius: var(--border-radius-pill, 100px);
+	background-color: var(--color-background-hover);
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+	overflow-wrap: anywhere;
+}
+
+.cleaner__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
 	margin-top: 8px;
 }
 
@@ -310,6 +472,8 @@ onMounted(() => load())
 	bottom: 0;
 	left: 50%;
 	margin-left: calc(var(--wheel-size) / -2);
+	/* Drop the hub onto the bottom edge so only the upper half stays visible. */
+	transform: translateY(50%);
 }
 
 .cleaner__sr-only {

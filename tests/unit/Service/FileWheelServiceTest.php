@@ -96,6 +96,56 @@ final class FileWheelServiceTest extends TestCase {
 		$this->assertSame('cat.jpg', $this->service->pickCandidates('alice', 10)['files'][0]['path']);
 	}
 
+	public function testItOnlyKeepsNamesMatchingTheFilter(): void {
+		$this->userFolder->method('getDirectoryListing')->willReturn([
+			$this->mockFile(1, 'IMG_001.jpg'),
+			$this->mockFile(2, 'notes.txt'),
+			$this->mockFile(3, 'holiday-img.png'),
+		]);
+
+		$names = array_column($this->service->pickCandidates('alice', 10, '', 'img')['files'], 'name');
+
+		// Matching ignores case, so the upper case and lower case names both stay.
+		$this->assertEqualsCanonicalizing(['IMG_001.jpg', 'holiday-img.png'], $names);
+	}
+
+	public function testTheFilterAlsoNarrowsTheTotal(): void {
+		$this->userFolder->method('getDirectoryListing')->willReturn([
+			$this->mockFile(1, 'keep-me.txt'),
+			$this->mockFile(2, 'other.txt'),
+		]);
+
+		$this->assertSame(1, $this->service->pickCandidates('alice', 10, '', 'keep')['total']);
+	}
+
+	public function testItStartsFromTheConfiguredFolder(): void {
+		$scoped = $this->createMock(Folder::class);
+		$scoped->method('getDirectoryListing')->willReturn([$this->mockFile(9, 'inside.txt')]);
+		$this->userFolder->expects($this->once())->method('get')->with('Photos')->willReturn($scoped);
+		// The home folder itself must not be walked when a subfolder is configured.
+		$this->userFolder->expects($this->never())->method('getDirectoryListing');
+
+		$result = $this->service->pickCandidates('alice', 10, 'Photos', '');
+
+		$this->assertSame(['inside.txt'], array_column($result['files'], 'name'));
+	}
+
+	public function testItRejectsAConfiguredPathThatIsNotAFolder(): void {
+		$this->userFolder->method('get')->willReturn($this->mockFile(1, 'cat.jpg'));
+
+		$this->expectException(NotFoundException::class);
+
+		$this->service->pickCandidates('alice', 10, 'Photos/cat.jpg', '');
+	}
+
+	public function testItPropagatesAMissingConfiguredFolder(): void {
+		$this->userFolder->method('get')->willThrowException(new NotFoundException('gone'));
+
+		$this->expectException(NotFoundException::class);
+
+		$this->service->pickCandidates('alice', 10, 'Nowhere', '');
+	}
+
 	public function testDeleteRemovesTheFileAndDescribesIt(): void {
 		$file = $this->mockFile(7, 'doomed.txt');
 		$file->expects($this->once())->method('delete');

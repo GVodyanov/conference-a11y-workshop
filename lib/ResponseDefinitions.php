@@ -12,6 +12,18 @@ namespace OCA\ChaoticFileCleaner;
  *     size: int,
  * }
  *
+ * @psalm-type ChaoticFileCleanerHistoryEntry = array{
+ *     name: string,
+ *     path: string,
+ *     size: int,
+ *     deletedAt: int,
+ * }
+ *
+ * @psalm-type ChaoticFileCleanerSettings = array{
+ *     folder: string,
+ *     nameFilter: string,
+ * }
+ *
  * @psalm-suppress UnusedClass
  */
 class ResponseDefinitions {

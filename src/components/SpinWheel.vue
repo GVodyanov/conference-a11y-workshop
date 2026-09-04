@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { CleanableFile } from '../api'
+
+/** One slice of the wheel. The key only has to be unique within the wheel. */
+export interface WheelSegment {
+	key: string
+	label: string
+}
 
 const props = defineProps<{
-	files: CleanableFile[]
+	segments: WheelSegment[]
 }>()
 
 /** Radius of the wheel, in viewBox units. */
@@ -37,11 +42,13 @@ onBeforeUnmount(() => {
 	mediaQuery?.removeEventListener('change', onMotionPreferenceChange)
 })
 
-const count = computed(() => props.files.length)
+const count = computed(() => props.segments.length)
 const segmentAngle = computed(() => 360 / Math.max(1, count.value))
 const durationMs = computed(() => (prefersReducedMotion.value ? 0 : SPIN_DURATION))
 
-const fontSize = computed(() => Math.min(6.5, Math.max(2.6, 60 / Math.max(1, count.value))))
+// Roomy slices get bigger text; the cap only bites on wheels of about seven
+// slices or fewer, which is where there is space to spare.
+const fontSize = computed(() => Math.min(9, Math.max(2.6, 60 / Math.max(1, count.value))))
 const maxLabelChars = computed(() => Math.floor((LABEL_OUTER - LABEL_INNER) / (fontSize.value * 0.52)))
 
 /**
@@ -129,9 +136,9 @@ function labelAnchor(index: number): 'start' | 'end' {
 }
 
 /**
- * Shorten a file name to fit its slice, keeping the extension visible.
+ * Shorten a label to fit its slice, keeping any file extension visible.
  *
- * @param name The full file name
+ * @param name The full label
  */
 function truncate(name: string): string {
 	const limit = maxLabelChars.value
@@ -210,21 +217,21 @@ defineExpose({ spin })
 					transitionDuration: `${durationMs}ms`,
 				}">
 				<path
-					v-for="(file, index) in files"
-					:key="`segment-${file.id}`"
+					v-for="(segment, index) in segments"
+					:key="`slice-${segment.key}`"
 					class="wheel__segment"
 					:class="index % 2 === 0 ? 'wheel__segment--a' : 'wheel__segment--b'"
 					:d="segmentPath(index)" />
 
 				<text
-					v-for="(file, index) in files"
-					:key="`label-${file.id}`"
+					v-for="(segment, index) in segments"
+					:key="`label-${segment.key}`"
 					class="wheel__label"
 					:class="index % 2 === 0 ? 'wheel__label--a' : 'wheel__label--b'"
 					:transform="labelTransform(index)"
 					:text-anchor="labelAnchor(index)"
 					:font-size="fontSize"
-					dominant-baseline="middle">{{ truncate(file.name) }}</text>
+					dominant-baseline="middle">{{ truncate(segment.label) }}</text>
 			</g>
 
 			<circle
@@ -241,8 +248,6 @@ defineExpose({ spin })
 .wheel {
 	width: var(--wheel-size);
 	height: var(--wheel-size);
-	/* Drop the hub onto the bottom edge so only the upper half stays visible. */
-	transform: translateY(50%);
 	pointer-events: none;
 }
 
