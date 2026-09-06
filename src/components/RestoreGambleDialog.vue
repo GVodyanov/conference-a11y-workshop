@@ -170,6 +170,6 @@ async function spin(): Promise<void> {
 }
 
 .gamble__won {
-	color: var(--color-success-text, var(--color-success));
+	color: #7ec8a0;
 }
 </style>

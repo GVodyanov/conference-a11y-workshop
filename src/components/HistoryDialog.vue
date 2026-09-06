@@ -7,9 +7,12 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatFileSize } from '@nextcloud/files'
 import { t } from '@nextcloud/l10n'
+import { imagePath } from '@nextcloud/router'
 import { fetchHistory, type HistoryEntry } from '../api'
 
 const open = defineModel<boolean>({ required: true })
+
+const emptyImage = imagePath('chaotic_file_cleaner', 'no-casualties.svg')
 
 const entries = ref<HistoryEntry[]>([])
 const loading = ref(false)
@@ -61,12 +64,11 @@ watch(open, (isOpen) => {
 				:name="t('chaotic_file_cleaner', 'No casualties yet')"
 				:description="t('chaotic_file_cleaner', 'Files you clean with the wheel show up here.')">
 				<template #icon>
-					<svg viewBox="0 0 24 24"
-						width="20"
-						height="20"
-						aria-hidden="true">
-						<path fill="currentColor" d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.51,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z" />
-					</svg>
+					<img
+						:src="emptyImage"
+						alt="image"
+						width="64"
+						height="64">
 				</template>
 			</NcEmptyContent>
 
@@ -123,7 +125,10 @@ watch(open, (isOpen) => {
 	flex-direction: column;
 	gap: 2px;
 	padding: 10px 12px;
+	padding-left: 16px;
+	border-left: 4px solid var(--color-primary-element);
 	border-radius: var(--border-radius-element, 8px);
+	text-align: left;
 }
 
 .history__item:nth-child(odd) {
@@ -137,8 +142,8 @@ watch(open, (isOpen) => {
 
 .history__path,
 .history__meta {
-	color: var(--color-text-maxcontrast);
-	font-size: 0.9em;
+	color: #9e9e9e;
+	font-size: 11px;
 	overflow-wrap: anywhere;
 }
 

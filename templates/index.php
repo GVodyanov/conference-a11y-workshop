@@ -9,4 +9,4 @@ Util::addStyle(OCA\ChaoticFileCleaner\AppInfo\Application::APP_ID, OCA\ChaoticFi
 
 ?>
 
-<div id="chaotic_file_cleaner"></div>
+<div id="chaotic_file_cleaner" dir="ltr"></div>

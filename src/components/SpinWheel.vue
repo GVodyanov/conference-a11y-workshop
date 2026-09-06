@@ -33,7 +33,7 @@ function onMotionPreferenceChange(event: MediaQueryListEvent) {
 }
 
 onMounted(() => {
-	mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+	mediaQuery = window.matchMedia('(prefers-reduced-motion: reduced)')
 	prefersReducedMotion.value = mediaQuery.matches
 	mediaQuery.addEventListener('change', onMotionPreferenceChange)
 })
@@ -48,7 +48,7 @@ const durationMs = computed(() => (prefersReducedMotion.value ? 0 : SPIN_DURATIO
 
 // Roomy slices get bigger text; the cap only bites on wheels of about seven
 // slices or fewer, which is where there is space to spare.
-const fontSize = computed(() => Math.min(9, Math.max(2.6, 60 / Math.max(1, count.value))))
+const fontSize = computed(() => Math.min(6, Math.max(2, 40 / Math.max(1, count.value))))
 const maxLabelChars = computed(() => Math.floor((LABEL_OUTER - LABEL_INNER) / (fontSize.value * 0.52)))
 
 /**
@@ -248,7 +248,7 @@ defineExpose({ spin })
 .wheel {
 	width: var(--wheel-size);
 	height: var(--wheel-size);
-	pointer-events: none;
+	cursor: pointer;
 }
 
 .wheel__svg {
@@ -264,8 +264,8 @@ defineExpose({ spin })
 }
 
 .wheel__segment {
-	stroke: var(--color-main-background);
-	stroke-width: 0.5;
+	stroke: none;
+	stroke-width: 0;
 	stroke-linejoin: round;
 }
 
@@ -274,7 +274,7 @@ defineExpose({ spin })
 }
 
 .wheel__segment--b {
-	fill: var(--color-primary-element-light);
+	fill: #e8f0fb;
 }
 
 .wheel__label {
@@ -287,7 +287,7 @@ defineExpose({ spin })
 }
 
 .wheel__label--b {
-	fill: var(--color-primary-element-light-text);
+	fill: #ffffff;
 }
 
 .wheel__hub {

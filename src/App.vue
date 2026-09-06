@@ -7,14 +7,16 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { showError } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
+import { imagePath } from '@nextcloud/router'
 import SpinWheel, { type WheelSegment } from './components/SpinWheel.vue'
 import HistoryDialog from './components/HistoryDialog.vue'
 import SettingsDialog from './components/SettingsDialog.vue'
 import RestoreGambleDialog from './components/RestoreGambleDialog.vue'
 import { deleteFile, fetchWheel, isNotFound, type CleanableFile } from './api'
+import { getWheelSize } from './preferences'
 
-/** How many files fate gets to choose between in one round. */
-const WHEEL_SIZE = 12
+const heroImage = imagePath('chaotic_file_cleaner', 'hero-wheel.svg')
+const goneImage = imagePath('chaotic_file_cleaner', 'gone.svg')
 
 const wheel = ref<InstanceType<typeof SpinWheel> | null>(null)
 
@@ -87,7 +89,7 @@ async function load(quiet = false): Promise<void> {
 	loadError.value = ''
 
 	try {
-		const result = await fetchWheel(WHEEL_SIZE)
+		const result = await fetchWheel(getWheelSize())
 		files.value = result.files
 		totalFiles.value = result.total
 		activeFolder.value = result.folder
@@ -183,6 +185,12 @@ onMounted(() => load())
 		<NcAppContent>
 			<div class="cleaner">
 				<div class="cleaner__stage">
+					<img
+						class="cleaner__hero"
+						:src="heroImage"
+						width="64"
+						height="64">
+
 					<h1 class="cleaner__title">
 						{{ t('chaotic_file_cleaner', 'Chaotic file cleaner') }}
 					</h1>
@@ -207,17 +215,19 @@ onMounted(() => load())
 							{{ buttonLabel }}
 						</NcButton>
 
-						<NcButton
-							variant="secondary"
-							size="large"
+						<div
+							class="cleaner__history-button"
+							role="button"
+							:aria-label="t('chaotic_file_cleaner', 'Casualty log')"
 							@click="historyOpen = true">
 							{{ t('chaotic_file_cleaner', 'History') }}
-						</NcButton>
+						</div>
 
 						<NcButton
 							variant="tertiary"
 							size="large"
-							:aria-label="t('chaotic_file_cleaner', 'Cleaning rules')"
+							tabindex="3"
+							:aria-label="t('chaotic_file_cleaner', 'Cog')"
 							@click="settingsOpen = true">
 							<template #icon>
 								<svg
@@ -277,7 +287,15 @@ onMounted(() => load())
 						v-else-if="lastDeleted"
 						type="warning"
 						:heading="t('chaotic_file_cleaner', 'The wheel has spoken')">
-						<span class="cleaner__victim">{{ lastDeleted.path }}</span>
+						<span class="cleaner__victim">
+							<img
+								class="cleaner__victim-icon"
+								:src="goneImage"
+								alt="gone.svg"
+								width="24"
+								height="24">
+							{{ lastDeleted.path }}
+						</span>
 						<span class="cleaner__victim-note">
 							{{ t('chaotic_file_cleaner', 'Deleted. Check the trash bin if you regret this.') }}
 						</span>
@@ -305,7 +323,10 @@ onMounted(() => load())
 				</div>
 
 				<!-- Screen reader users get the candidates as plain text, since the wheel is a picture. -->
-				<div v-if="files.length > 0" class="cleaner__sr-only">
+				<div
+					v-if="files.length > 0"
+					class="cleaner__sr-only"
+					aria-hidden="true">
 					<h2>{{ t('chaotic_file_cleaner', 'Files currently on the wheel') }}</h2>
 					<ul>
 						<li v-for="file in files" :key="file.id">
@@ -314,7 +335,7 @@ onMounted(() => load())
 					</ul>
 				</div>
 
-				<p class="cleaner__sr-only" role="status" aria-live="polite">
+				<p class="cleaner__sr-only" role="status" aria-live="off">
 					{{ announcement }}
 				</p>
 
@@ -332,7 +353,10 @@ onMounted(() => load())
 					v-if="files.length > 0"
 					ref="wheel"
 					class="cleaner__wheel"
-					:segments="wheelSegments" />
+					role="button"
+					:aria-label="t('chaotic_file_cleaner', 'Wheel')"
+					:segments="wheelSegments"
+					@click="clean" />
 			</div>
 		</NcAppContent>
 	</NcContent>
@@ -352,13 +376,24 @@ onMounted(() => load())
 	 * that a taller card grows out of upwards into the slack above it, which
 	 * keeps the title still no matter which message is showing.
 	 */
-	grid-template-rows: 1fr 8rem var(--wheel-visible);
+	grid-template-rows: 1fr 128px var(--wheel-visible);
 	/* One explicit column, otherwise the rows get auto-placed side by side. */
 	grid-template-columns: minmax(0, 1fr);
 	box-sizing: border-box;
+	/* The wheel and the hero need room side by side without the two colliding. */
+	min-width: 960px;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+}
+
+/* The theme's focus ring fights with the wheel behind the buttons. */
+.cleaner :deep(button:focus),
+.cleaner :deep(button:focus-visible),
+.cleaner :deep(a:focus),
+.cleaner :deep(a:focus-visible) {
+	outline: none;
+	box-shadow: none;
 }
 
 /* Centred in the space above the wheel, and independent of any message below. */
@@ -372,13 +407,19 @@ onMounted(() => load())
 	z-index: 1;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: flex-start;
 	gap: 12px;
 	box-sizing: border-box;
 	width: 100%;
 	max-width: 32rem;
 	padding: 16px;
-	text-align: center;
+	padding-left: 48px;
+	text-align: left;
+}
+
+.cleaner__hero {
+	width: 64px;
+	height: 64px;
 }
 
 .cleaner__title {
@@ -388,30 +429,69 @@ onMounted(() => load())
 	line-height: 1.1;
 }
 
+/* One line of slack under the title, and no more. */
 .cleaner__tagline {
 	margin: 0;
 	max-width: 26rem;
-	color: var(--color-text-maxcontrast);
+	height: 34px;
+	overflow: hidden;
+	color: #b3b3b3;
 }
 
 /* The rules in force, so it is never a mystery why the wheel looks empty. */
 .cleaner__scope {
 	margin: 0;
+	margin-left: 24px;
 	padding: 4px 12px;
+	max-width: 22rem;
 	border-radius: var(--border-radius-pill, 100px);
-	background-color: var(--color-background-hover);
-	color: var(--color-text-maxcontrast);
-	font-size: 0.9em;
-	overflow-wrap: anywhere;
+	background-color: #f5f5f5;
+	color: #9b9b9b;
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .cleaner__actions {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	align-items: center;
 	justify-content: center;
 	gap: 12px;
 	margin-top: 8px;
+}
+
+/* Draw the eye to the one button that matters. */
+.cleaner__button {
+	animation: cfc-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes cfc-pulse {
+	0%, 100% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(1.06);
+	}
+}
+
+.cleaner__history-button {
+	display: inline-flex;
+	align-items: center;
+	height: 44px;
+	padding: 0 16px;
+	border-radius: var(--border-radius-element, 8px);
+	background-color: var(--color-background-dark);
+	color: var(--color-main-text);
+	font-weight: bold;
+	cursor: pointer;
+	user-select: none;
+}
+
+.cleaner__history-button:hover {
+	background-color: var(--color-background-hover);
 }
 
 /*
@@ -456,6 +536,23 @@ onMounted(() => load())
 	overflow: hidden;
 	font-weight: 700;
 	overflow-wrap: anywhere;
+	animation: cfc-fade 1.2s ease-in-out infinite;
+}
+
+@keyframes cfc-fade {
+	0%, 100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.45;
+	}
+}
+
+.cleaner__victim-icon {
+	width: 24px;
+	height: 24px;
+	vertical-align: text-bottom;
 }
 
 .cleaner__victim-note {

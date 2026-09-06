@@ -4,16 +4,17 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
 import { FilePickerClosed, getFilePickerBuilder } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
 import { fetchSettings, saveSettings } from '../api'
+import { getWheelSize, setWheelSize, MAX_WHEEL_SIZE, MIN_WHEEL_SIZE } from '../preferences'
 
 const open = defineModel<boolean>({ required: true })
 const emit = defineEmits<{ saved: [] }>()
 
 const folder = ref('')
 const nameFilter = ref('')
+const wheelSize = ref(getWheelSize())
 const loading = ref(false)
 const saving = ref(false)
 const loadFailed = ref(false)
@@ -26,6 +27,8 @@ async function load(): Promise<void> {
 	loading.value = true
 	loadFailed.value = false
 	saveError.value = ''
+
+	wheelSize.value = getWheelSize()
 
 	try {
 		const settings = await fetchSettings()
@@ -92,6 +95,7 @@ async function save(): Promise<void> {
 		const stored = await saveSettings({ folder: folder.value, nameFilter: nameFilter.value })
 		folder.value = stored.folder
 		nameFilter.value = stored.nameFilter
+		setWheelSize(wheelSize.value)
 		emit('saved')
 		open.value = false
 	} catch (error) {
@@ -123,9 +127,9 @@ async function save(): Promise<void> {
 				class="settings__field"
 				role="group"
 				aria-labelledby="cfc-folder-heading">
-				<h3 id="cfc-folder-heading" class="settings__label">
+				<div class="settings__label">
 					{{ t('chaotic_file_cleaner', 'Folder to clean from') }}
-				</h3>
+				</div>
 				<p class="settings__value">
 					{{ folder === '' ? t('chaotic_file_cleaner', 'All of your files') : folder }}
 				</p>
@@ -142,11 +146,33 @@ async function save(): Promise<void> {
 				</div>
 			</div>
 
-			<NcTextField
-				v-model="nameFilter"
-				:label="t('chaotic_file_cleaner', 'Only file names containing')"
-				:placeholder="t('chaotic_file_cleaner', 'e.g. screenshot')"
-				:helper-text="t('chaotic_file_cleaner', 'Leave this empty to put every file name in danger.')" />
+			<div class="settings__field">
+				<input
+					v-model="nameFilter"
+					class="settings__input"
+					type="text"
+					:placeholder="t('chaotic_file_cleaner', 'Only file names containing, e.g. screenshot')">
+				<span class="settings__hint">
+					{{ t('chaotic_file_cleaner', 'Leave this empty to put every file name in danger.') }}
+				</span>
+			</div>
+
+			<div class="settings__field">
+				<label class="settings__label" for="wheel-size">
+					{{ t('chaotic_file_cleaner', 'Files on the wheel') }}
+				</label>
+				<div class="settings__row">
+					<input
+						id="cfc-wheel-size"
+						v-model.number="wheelSize"
+						class="settings__slider"
+						type="range"
+						:min="MIN_WHEEL_SIZE"
+						:max="MAX_WHEEL_SIZE"
+						step="1">
+					<span class="settings__hint">{{ wheelSize }}</span>
+				</div>
+			</div>
 
 			<NcNoteCard v-if="saveError !== ''" type="error" :text="saveError" />
 		</div>
@@ -204,13 +230,37 @@ async function save(): Promise<void> {
 	border-radius: var(--border-radius-element, 8px);
 	background-color: var(--color-background-hover);
 	font-family: var(--font-face-monospace, monospace);
+	direction: ltr;
+	text-align: left;
 	overflow-wrap: anywhere;
 }
 
 .settings__row {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: 8px;
 	margin-top: 4px;
+}
+
+.settings__input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 8px 12px;
+	border: 2px solid var(--color-border-maxcontrast);
+	border-radius: var(--border-radius-element, 8px);
+	background-color: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 13px;
+}
+
+.settings__slider {
+	flex: 1 1 auto;
+	min-width: 12rem;
+}
+
+.settings__hint {
+	color: #9b9b9b;
+	font-size: 11px;
 }
 </style>

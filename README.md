@@ -1,5 +1,11 @@
 # Chaotic file cleaner
 
+> [!CAUTION]
+> **You are on `workshop/accessibility-issues`.** This branch deliberately contains
+> around 40 accessibility defects for a web accessibility workshop. Do not merge it
+> and do not open a pull request from it. See [ACCESSIBILITY_ISSUES.md](ACCESSIBILITY_ISSUES.md)
+> for the full list; `main` is the accessible version.
+
 The least responsible way to tidy up your Nextcloud Files.
 
 Press one button. A wheel loaded with your own files starts spinning. Whichever
