@@ -21,7 +21,7 @@ enabled), so fate is at least reversible.
 	<category>games</category>
 	<bugs>https://example.com/bugs</bugs>
 	<dependencies>
-		<nextcloud min-version="31" max-version="35"/>
+		<nextcloud min-version="31" max-version="36"/>
 	</dependencies>
 	<navigations>
 		<navigation>
