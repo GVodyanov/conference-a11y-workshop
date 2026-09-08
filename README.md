@@ -1,5 +1,11 @@
 # Chaotic file cleaner
 
+> [!CAUTION]
+> **You are on `workshop/a11y-hunt`.** This branch deliberately contains 10
+> accessibility defects for a web accessibility workshop. Do not merge it and do not
+> open a pull request from it. See [ACCESSIBILITY_ISSUES.md](ACCESSIBILITY_ISSUES.md)
+> for the full list; `main` is the accessible version.
+
 The least responsible way to tidy up your Nextcloud Files.
 
 Press one button. A wheel loaded with your own files starts spinning. Whichever
@@ -90,13 +96,17 @@ The wheel is a picture, so it is `aria-hidden` and backed by real text:
 
 - the files currently on the wheel are exposed as a visually hidden list,
 - spin start and outcome are announced through an `aria-live` region,
-- `prefers-reduced-motion` replaces the five-turn spin with an instant result,
 - segment colours come from the Nextcloud theme's paired background/text
   variables, and slices are separated by strokes rather than by colour alone.
 
 Both dialogs are real modals: they are labelled by their title, take focus on
 open, and return focus to the button that opened them when dismissed with
-Escape. The cog button carries an `aria-label`, since it shows only an icon.
+Escape.
+
+> [!NOTE]
+> The claims in this section describe `main`. On this branch several of them are
+> no longer true — that is the exercise. See
+> [ACCESSIBILITY_ISSUES.md](ACCESSIBILITY_ISSUES.md).
 
 ## Development
 

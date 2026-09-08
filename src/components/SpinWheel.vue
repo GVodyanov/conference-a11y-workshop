@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 /** One slice of the wheel. The key only has to be unique within the wheel. */
 export interface WheelSegment {
@@ -24,27 +24,11 @@ const SPIN_TURNS = 5
 /** Cumulative rotation of the wheel in degrees. It only ever grows. */
 const rotation = ref(0)
 const disc = ref<SVGGElement | null>(null)
-const prefersReducedMotion = ref(false)
-
-let mediaQuery: MediaQueryList | null = null
-
-function onMotionPreferenceChange(event: MediaQueryListEvent) {
-	prefersReducedMotion.value = event.matches
-}
-
-onMounted(() => {
-	mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-	prefersReducedMotion.value = mediaQuery.matches
-	mediaQuery.addEventListener('change', onMotionPreferenceChange)
-})
-
-onBeforeUnmount(() => {
-	mediaQuery?.removeEventListener('change', onMotionPreferenceChange)
-})
 
 const count = computed(() => props.segments.length)
 const segmentAngle = computed(() => 360 / Math.max(1, count.value))
-const durationMs = computed(() => (prefersReducedMotion.value ? 0 : SPIN_DURATION))
+// The spin is the whole point of the app, so every round gets the full turn.
+const durationMs = SPIN_DURATION
 
 // Roomy slices get bigger text; the cap only bites on wheels of about seven
 // slices or fewer, which is where there is space to spare.
@@ -172,11 +156,6 @@ async function spin(index: number): Promise<void> {
 
 	// Settle somewhere inside the slice instead of always dead centre.
 	const jitter = (Math.random() - 0.5) * segment * 0.6
-
-	if (durationMs.value === 0) {
-		rotation.value += delta + jitter
-		return
-	}
 
 	rotation.value += delta + SPIN_TURNS * 360 + jitter
 

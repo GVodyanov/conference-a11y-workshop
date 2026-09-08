@@ -4,7 +4,6 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
-import NcTextField from '@nextcloud/vue/components/NcTextField'
 import { FilePickerClosed, getFilePickerBuilder } from '@nextcloud/dialogs'
 import { t } from '@nextcloud/l10n'
 import { fetchSettings, saveSettings } from '../api'
@@ -142,11 +141,19 @@ async function save(): Promise<void> {
 				</div>
 			</div>
 
-			<NcTextField
-				v-model="nameFilter"
-				:label="t('chaotic_file_cleaner', 'Only file names containing')"
-				:placeholder="t('chaotic_file_cleaner', 'e.g. screenshot')"
-				:helper-text="t('chaotic_file_cleaner', 'Leave this empty to put every file name in danger.')" />
+			<div class="settings__field">
+				<p class="settings__label">
+					{{ t('chaotic_file_cleaner', 'Only file names containing') }}
+				</p>
+				<input
+					v-model="nameFilter"
+					class="settings__input"
+					type="text"
+					:placeholder="t('chaotic_file_cleaner', 'e.g. screenshot')">
+				<p class="settings__hint">
+					{{ t('chaotic_file_cleaner', 'Leave this empty to put every file name in danger.') }}
+				</p>
+			</div>
 
 			<NcNoteCard v-if="saveError !== ''" type="error" :text="saveError" />
 		</div>
@@ -212,5 +219,24 @@ async function save(): Promise<void> {
 	flex-wrap: wrap;
 	gap: 8px;
 	margin-top: 4px;
+}
+
+.settings__input {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	padding: 8px 12px;
+	border: 2px solid var(--color-border-maxcontrast);
+	border-radius: var(--border-radius-element, 8px);
+	background-color: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 1rem;
+}
+
+/* Kept small so the note sits under the field without competing with it. */
+.settings__hint {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+	font-size: 8px;
 }
 </style>

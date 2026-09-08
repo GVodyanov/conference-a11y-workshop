@@ -195,10 +195,12 @@ onMounted(() => load())
 					</p>
 
 					<div class="cleaner__actions">
+						<!-- The wheel is the thing to look at, so the row is driven by clicks. -->
 						<NcButton
 							class="cleaner__button"
 							variant="primary"
 							size="large"
+							tabindex="-1"
 							:disabled="!canSpin"
 							@click="clean">
 							<template v-if="busy" #icon>
@@ -210,14 +212,16 @@ onMounted(() => load())
 						<NcButton
 							variant="secondary"
 							size="large"
+							tabindex="-1"
 							@click="historyOpen = true">
 							{{ t('chaotic_file_cleaner', 'History') }}
 						</NcButton>
 
 						<NcButton
+							class="cleaner__cog"
 							variant="tertiary"
 							size="large"
-							:aria-label="t('chaotic_file_cleaner', 'Cleaning rules')"
+							tabindex="-1"
 							@click="settingsOpen = true">
 							<template #icon>
 								<svg
@@ -356,6 +360,8 @@ onMounted(() => load())
 	/* One explicit column, otherwise the rows get auto-placed side by side. */
 	grid-template-columns: minmax(0, 1fr);
 	box-sizing: border-box;
+	/* The three rows were measured against this width, so never go below it. */
+	min-width: 900px;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
@@ -391,6 +397,8 @@ onMounted(() => load())
 .cleaner__tagline {
 	margin: 0;
 	max-width: 26rem;
+	/* Scales with the viewport, so it stays in proportion with the title. */
+	font-size: 1.2vw;
 	color: var(--color-text-maxcontrast);
 }
 
@@ -399,19 +407,29 @@ onMounted(() => load())
 	margin: 0;
 	padding: 4px 12px;
 	border-radius: var(--border-radius-pill, 100px);
-	background-color: var(--color-background-hover);
-	color: var(--color-text-maxcontrast);
+	/* Greys taken straight from the mockup, so the pill reads as secondary. */
+	background-color: #f0f0f0;
+	color: #b0b0b0;
 	font-size: 0.9em;
 	overflow-wrap: anywhere;
 }
 
 .cleaner__actions {
 	display: flex;
-	flex-wrap: wrap;
+	/* One row keeps the primary button next to its two companions. */
+	flex-wrap: nowrap;
 	align-items: center;
 	justify-content: center;
 	gap: 12px;
 	margin-top: 8px;
+}
+
+/* Trimmed down so the cog sits quietly beside the two labelled buttons. */
+.cleaner__cog {
+	min-width: 24px;
+	width: 24px;
+	min-height: 24px;
+	height: 24px;
 }
 
 /*
