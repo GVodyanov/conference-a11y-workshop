@@ -1,5 +1,7 @@
 # Chaotic file cleaner
 
+> ⚠️ THIS WHOLE REPO WAS MADE WITH CLAUDE CODE
+
 The least responsible way to tidy up your Nextcloud Files.
 
 Press one button. A wheel loaded with your own files starts spinning. Whichever
