@@ -1,0 +1,755 @@
+/*
+ * Nextcloud-flavoured Slidev theme.
+ *
+ * Brand values taken from nextcloud.com: Inter, #0082c9 primary,
+ * linear-gradient(45deg, #0082c9 20%, #1cafff) as the signature gradient,
+ * #0f0833 as the dark surface.
+ */
+
+:root {
+	--nc-blue: #0082c9;
+	--nc-blue-deep: #004871;
+	--nc-blue-light: #1cafff;
+	--nc-blue-bright: #30b6ff;
+	--nc-navy: #0f0833;
+	--nc-navy-deep: #0c0726;
+	--nc-tint: #dbedf8;
+	--nc-tint-soft: #f2f8fc;
+
+	--nc-text: #0f0833;
+	--nc-text-muted: #6b6880;
+	--nc-border: #e3e1ea;
+	--nc-surface: #ffffff;
+
+	--nc-bad: #a4201f;
+	--nc-bad-bg: #fdf3f2;
+	--nc-bad-border: #f0c8c5;
+	--nc-good: #1a7f37;
+	--nc-good-bg: #f1f9f3;
+	--nc-good-border: #c3e6cd;
+
+	--nc-gradient: linear-gradient(45deg, #0082c9 20%, #1cafff);
+	--nc-gradient-deep: linear-gradient(135deg, #0f0833 0%, #123a6b 55%, #0082c9 100%);
+
+	--nc-radius: 14px;
+	--nc-radius-sm: 8px;
+	--nc-shadow: 0 2px 10px rgba(15, 8, 51, 0.07);
+
+	--slidev-theme-primary: #0082c9;
+}
+
+/* ------------------------------------------------------------------ base */
+
+.slidev-layout {
+	font-family: 'Inter', 'Noto Sans Arabic', 'Noto Sans Hebrew', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	font-size: 18px;
+	line-height: 1.55;
+	color: var(--nc-text);
+	background: var(--nc-surface);
+	padding: 2.2rem 2.6rem 2.6rem;
+	font-feature-settings: 'cv05' 1, 'ss03' 1;
+	-webkit-font-smoothing: antialiased;
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3,
+.slidev-layout h4 {
+	font-weight: 700;
+	letter-spacing: -0.018em;
+	color: var(--nc-text);
+}
+
+.slidev-layout h1 {
+	font-size: 2.5rem;
+	line-height: 1.1;
+	margin-bottom: 0.5rem;
+}
+
+.slidev-layout h2 {
+	font-size: 1.95rem;
+	line-height: 1.15;
+	margin-bottom: 0.9rem;
+	padding-bottom: 0.55rem;
+	position: relative;
+}
+
+.slidev-layout h2::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 3.2rem;
+	height: 4px;
+	border-radius: 4px;
+	background: var(--nc-gradient);
+}
+
+.slidev-layout h3 {
+	font-size: 1.15rem;
+	margin-bottom: 0.4rem;
+}
+
+.slidev-layout p {
+	margin: 0 0 0.75rem;
+}
+
+.slidev-layout ul {
+	margin: 0 0 0.75rem;
+	padding-left: 0;
+	list-style: none;
+}
+
+.slidev-layout ul > li {
+	position: relative;
+	padding-left: 1.15rem;
+	margin-bottom: 0.42rem;
+}
+
+.slidev-layout ul > li::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0.62em;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--nc-blue);
+}
+
+.slidev-layout ol {
+	margin: 0 0 0.75rem;
+	padding-left: 1.3rem;
+}
+
+.slidev-layout ol > li {
+	margin-bottom: 0.42rem;
+}
+
+.slidev-layout strong {
+	font-weight: 700;
+	color: var(--nc-text);
+}
+
+.slidev-layout a {
+	color: var(--nc-blue-deep);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.slidev-layout :not(pre) > code,
+.slidev-note :not(pre) > code {
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.86em;
+	background: var(--nc-tint-soft);
+	border: 1px solid var(--nc-border);
+	border-radius: 5px;
+	padding: 0.08em 0.34em;
+	color: var(--nc-blue-deep);
+}
+
+.slidev-layout pre {
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	border-radius: var(--nc-radius-sm) !important;
+	font-size: 0.8rem !important;
+	line-height: 1.5 !important;
+}
+
+.slidev-layout pre code {
+	background: none !important;
+	border: none;
+	padding: 0;
+	font-size: 1em;
+}
+
+/* --------------------------------------------------------------- pieces */
+
+.nc-eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--nc-blue-deep);
+	margin-bottom: 0.5rem;
+}
+
+.nc-eyebrow::before {
+	content: '';
+	width: 1.4rem;
+	height: 3px;
+	border-radius: 3px;
+	background: var(--nc-gradient);
+}
+
+.nc-lede {
+	font-size: 1.12rem;
+	line-height: 1.5;
+	color: var(--nc-text-muted);
+	max-width: 46rem;
+}
+
+.nc-note {
+	font-size: 0.82rem;
+	color: var(--nc-text-muted);
+	line-height: 1.45;
+}
+
+.nc-muted {
+	color: var(--nc-text-muted);
+}
+
+/* WCAG / meta chips */
+
+.nc-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.nc-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	background: var(--nc-tint);
+	color: var(--nc-blue-deep);
+	white-space: nowrap;
+}
+
+.nc-chip--plain {
+	background: #f4f3f7;
+	color: var(--nc-text-muted);
+}
+
+.nc-chip--bad {
+	background: var(--nc-bad-bg);
+	color: var(--nc-bad);
+}
+
+.nc-chip--good {
+	background: var(--nc-good-bg);
+	color: var(--nc-good);
+}
+
+/* grids */
+
+.nc-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	align-items: start;
+}
+
+.nc-grid-3 {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.8rem;
+	align-items: start;
+}
+
+.nc-grid-4 {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.7rem;
+	align-items: start;
+}
+
+/* cards */
+
+.nc-card {
+	background: var(--nc-surface);
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	box-shadow: var(--nc-shadow);
+	padding: 0.9rem 1rem 1rem;
+}
+
+.nc-card--flat {
+	box-shadow: none;
+	background: var(--nc-tint-soft);
+}
+
+.nc-card--bad {
+	border-color: var(--nc-bad-border);
+	background: var(--nc-bad-bg);
+}
+
+.nc-card--good {
+	border-color: var(--nc-good-border);
+	background: var(--nc-good-bg);
+}
+
+.nc-card--accent {
+	border-color: transparent;
+	background: var(--nc-tint);
+}
+
+.nc-card__tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.7rem;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	margin-bottom: 0.55rem;
+}
+
+.nc-card--bad .nc-card__tag {
+	color: var(--nc-bad);
+}
+
+.nc-card--good .nc-card__tag {
+	color: var(--nc-good);
+}
+
+.nc-card__tag svg {
+	width: 0.95rem;
+	height: 0.95rem;
+	flex: none;
+}
+
+.nc-card h3 {
+	font-size: 1rem;
+	margin-bottom: 0.3rem;
+}
+
+/* keyboard keys */
+
+.slidev-layout kbd,
+.nc-kbd {
+	display: inline-block;
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.74rem;
+	font-weight: 700;
+	line-height: 1;
+	padding: 0.3rem 0.45rem;
+	border-radius: 6px;
+	background: #fff;
+	color: var(--nc-text);
+	border: 1px solid #cfccdb;
+	box-shadow: 0 2px 0 #cfccdb;
+	white-space: nowrap;
+}
+
+/* the "how to test it" strip that closes every topic */
+
+.nc-test {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.7rem;
+	background: var(--nc-tint);
+	border-radius: var(--nc-radius);
+	padding: 0.7rem 0.9rem;
+	font-size: 0.88rem;
+	line-height: 1.45;
+}
+
+.nc-test__icon {
+	flex: none;
+	width: 1.7rem;
+	height: 1.7rem;
+	border-radius: 50%;
+	background: var(--nc-gradient);
+	color: #fff;
+	display: grid;
+	place-items: center;
+}
+
+.nc-test__icon svg {
+	width: 1rem;
+	height: 1rem;
+}
+
+.nc-test strong {
+	color: var(--nc-blue-deep);
+}
+
+/* fake devtools panel */
+
+.nc-panel {
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius-sm);
+	overflow: hidden;
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.74rem;
+	background: #fff;
+}
+
+.nc-panel__bar {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	background: #f4f3f7;
+	border-bottom: 1px solid var(--nc-border);
+	padding: 0.35rem 0.6rem;
+	font-family: 'Inter', sans-serif;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: var(--nc-text-muted);
+}
+
+.nc-panel__body {
+	padding: 0.55rem 0.7rem;
+	line-height: 1.7;
+}
+
+/* the app mock frame used by the live demos */
+
+.nc-frame {
+	border: 1px solid var(--nc-border);
+	border-radius: var(--nc-radius);
+	background: #fff;
+	overflow: hidden;
+	box-shadow: var(--nc-shadow);
+}
+
+.nc-frame__bar {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.4rem 0.6rem;
+	background: var(--nc-gradient);
+}
+
+.nc-frame__dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.55);
+}
+
+.nc-frame__title {
+	margin-left: 0.4rem;
+	font-size: 0.7rem;
+	font-weight: 600;
+	color: #fff;
+}
+
+.nc-frame__body {
+	padding: 0.85rem 0.95rem;
+}
+
+/* demo control row shared by the interactive components */
+
+.nc-controls {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.7rem;
+}
+
+.nc-btn {
+	font-family: inherit;
+	font-size: 0.8rem;
+	font-weight: 600;
+	padding: 0.38rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--nc-blue);
+	background: #fff;
+	color: var(--nc-blue-deep);
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nc-btn:hover {
+	background: var(--nc-tint);
+}
+
+.nc-btn--on {
+	background: var(--nc-blue);
+	border-color: var(--nc-blue);
+	color: #fff;
+}
+
+.nc-btn--on:hover {
+	background: var(--nc-blue-deep);
+}
+
+.nc-btn:focus-visible {
+	outline: 3px solid var(--nc-navy);
+	outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------- dark bits */
+
+.nc-dark {
+	background: var(--nc-gradient-deep);
+	color: #fff;
+}
+
+.nc-dark h1,
+.nc-dark h2,
+.nc-dark h3,
+.nc-dark strong {
+	color: #fff;
+}
+
+.nc-dark h2::after {
+	background: #fff;
+}
+
+.nc-dark .nc-eyebrow {
+	color: var(--nc-blue-bright);
+}
+
+.nc-dark .nc-eyebrow::before {
+	background: var(--nc-blue-bright);
+}
+
+.nc-dark .nc-lede,
+.nc-dark .nc-note,
+.nc-dark .nc-muted {
+	color: rgba(255, 255, 255, 0.78);
+}
+
+.nc-dark :not(pre) > code {
+	background: rgba(255, 255, 255, 0.12);
+	border-color: rgba(255, 255, 255, 0.2);
+	color: #cfeaff;
+}
+
+.nc-dark ul > li::before {
+	background: var(--nc-blue-bright);
+}
+
+.nc-dark a {
+	color: #9fdcff;
+}
+
+/* ------------------------------------------------------------- layouts */
+
+.slidev-layout.nc-cover,
+.slidev-layout.nc-section {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	position: relative;
+	overflow: hidden;
+}
+
+.slidev-layout.nc-cover {
+	padding: 3rem 3.4rem;
+}
+
+.nc-blobs {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.nc-blobs span {
+	position: absolute;
+	border-radius: 50%;
+	border: 1.5px solid rgba(255, 255, 255, 0.16);
+}
+
+/* ------------------------------------------------------------- footer */
+
+.nc-footer {
+	position: absolute;
+	left: 2.6rem;
+	right: 2.6rem;
+	bottom: 0.85rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.68rem;
+	font-weight: 500;
+	color: var(--nc-text-muted);
+	pointer-events: none;
+}
+
+.nc-footer__brand {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.nc-footer__mark {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--nc-gradient);
+}
+
+/* visually hidden, used in the demos to show what a screen reader reads */
+
+.nc-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* cover byline */
+
+.nc-byline {
+	display: flex;
+	gap: 2.2rem;
+	margin-top: 1.6rem;
+}
+
+.nc-byline > div {
+	display: flex;
+	flex-direction: column;
+}
+
+.nc-byline strong {
+	font-size: 1.05rem;
+	font-weight: 700;
+}
+
+.nc-byline span {
+	font-size: 0.78rem;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* big number callouts */
+
+.nc-stat {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6rem;
+	justify-content: center;
+}
+
+.nc-stat__big {
+	font-size: 5.2rem;
+	font-weight: 800;
+	line-height: 1;
+	letter-spacing: -0.04em;
+}
+
+.nc-stat__unit {
+	font-size: 1.5rem;
+	font-weight: 600;
+	opacity: 0.8;
+}
+
+/* tight spacing helpers */
+
+.nc-tight > h2 {
+	margin-bottom: 0.6rem;
+}
+
+.nc-stack > * + * {
+	margin-top: 0.75rem;
+}
+
+/* opt-in: centre the content between the slide header and the footer */
+
+.nc-fill .nc-default__body {
+	display: flex;
+	flex-direction: column;
+}
+
+/* every block after the heading keeps the same rhythm as the grid gap */
+.nc-fill .nc-default__body > * + *:not(h2) {
+	margin-top: 1rem;
+}
+
+.nc-fill .nc-default__body > :nth-child(3) {
+	margin-top: auto;
+}
+
+.nc-fill .nc-default__body > :last-child {
+	margin-bottom: auto;
+}
+
+/* monospace word inside a heading, without the inline-code box */
+
+.nc-h-mono {
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.86em;
+	font-weight: 700;
+	color: var(--nc-blue);
+}
+
+/* the exercise brief */
+
+.exercise .nc-card {
+	padding: 0.7rem 0.85rem 0.75rem;
+}
+
+.exercise__code {
+	margin: 0.35rem 0 0 !important;
+	background: #fff !important;
+	border: 1px solid var(--nc-border);
+	padding: 0.5rem 0.6rem !important;
+	font-size: 0.78rem !important;
+}
+
+.exercise__score {
+	margin: 0.25rem 0 0;
+	font-size: 0.83rem;
+}
+
+.exercise__score > div {
+	display: flex;
+	align-items: baseline;
+	gap: 0.55rem;
+	padding: 0.12rem 0;
+}
+
+.exercise__score dt {
+	flex: none;
+	min-width: 1.5rem;
+	font-weight: 800;
+	color: var(--nc-blue-deep);
+	text-align: right;
+}
+
+.exercise__score dd {
+	margin: 0;
+	color: var(--nc-text-muted);
+	line-height: 1.35;
+}
+
+/* the footer sits on the gradient on cover, section and statement slides */
+
+.nc-dark .nc-footer {
+	color: rgba(255, 255, 255, 0.62);
+}
+
+.nc-dark .nc-footer__mark {
+	background: #fff;
+}
+
+/* placeholder link on the exercise slide */
+
+.exercise__link {
+	margin: 0.35rem 0 0;
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.86rem;
+	font-weight: 700;
+	color: var(--nc-blue-deep);
+	background: rgba(255, 255, 255, 0.65);
+	border: 1px dashed var(--nc-blue);
+	border-radius: var(--nc-radius-sm);
+	padding: 0.4rem 0.6rem;
+	text-align: center;
+}
+
+/* side-by-side cards that should share a height */
+
+.nc-grid--even {
+	align-items: stretch;
+}
+
+.nc-grid--even > .nc-card {
+	height: 100%;
+}
