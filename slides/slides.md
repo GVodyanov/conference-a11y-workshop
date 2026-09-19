@@ -78,28 +78,24 @@ ten habits that take about a minute each.
 layout: statement
 ---
 
-<div class="nc-stat">
-	<span class="nc-stat__big">3</span>
-	<span class="nc-stat__unit">of 10</span>
-</div>
+<div class="nc-eyebrow">Automated checks and human testing</div>
 
-## That is what an automated scanner catches
+## A clean scan is only the beginning
 
 <p class="nc-lede" style="margin-top: 0.8rem">
-	Of the ten kinds of issue we are about to go through, a scanner such as axe, the free
-	browser extension most teams already run, reliably reports three. The remaining seven
-	need a person with a keyboard, a screen reader, a zoom level, or a phone.
+	A scanner such as axe can flag contrast problems, missing names and some markup errors.
+	You still need to try the complete task with a keyboard, a screen reader and zoom.
 </p>
 
 <!--
-This is the most important idea in the deck, so give it room.
+Run the scanner in each relevant state, including open dialogs and form errors.
+The result depends on the tool, its rules and the state it can inspect. Missing
+form labels can also be detected, so do not promise an exact three-out-of-ten count.
+Have participants compare their scan with what they found while using the app.
 
-The three that tooling reliably catches are insufficient color contrast, a
-control with no accessible name, and a viewport tag that blocks zooming.
-Everything else needs somebody to actually use the interface.
-
-Automated testing is a floor rather than a finish line. That gap is the reason
-this is a workshop rather than a lint rule.
+Sources:
+https://www.w3.org/WAI/test-evaluate/tools/selecting/
+https://dequeuniversity.com/rules/axe/4.10/label
 -->
 
 ---
@@ -166,11 +162,15 @@ class: nc-tight nc-fill
 <div class="nc-chips">
 	<span class="nc-chip">WCAG 1.4.3 Contrast (Minimum), AA</span>
 	<span class="nc-chip nc-chip--plain">4.5:1 for body text</span>
-	<span class="nc-chip nc-chip--plain">3:1 for large text and UI</span>
+	<span class="nc-chip nc-chip--plain">3:1 for large text</span>
 </div>
 
 <!--
 Drag the slider live and point out where it crosses 4.5.
+
+Meaningful control boundaries and graphics have a separate 3:1 requirement
+under 1.4.11. Errors and states also need a text or shape cue, so color is
+never the only way to tell them apart (1.4.1).
 
 Two separate mistakes usually hide behind a failure like this one.
 
@@ -207,8 +207,8 @@ class: nc-tight nc-fill
 <TestIt icon="textsize">
 	<strong>How to find it:</strong> in Firefox, set <em>Settings, Fonts, Advanced, Default size</em>
 	to 24. In Chrome, set <em>Settings, Appearance, Font size</em> to <em>Very large</em>.
-	This is a different setting from zoom, and it only moves text sized in
-	<code>rem</code>, <code>em</code> or <code>%</code>.
+	This differs from zoom. Text in <code>rem</code>, <code>em</code> or <code>%</code>
+	can follow it when root and parent sizes follow the browser default.
 </TestIt>
 
 <!--
@@ -218,8 +218,9 @@ move.
 The rule is to size text in em, rem or percentages, and to reserve pixels for
 things that genuinely should not grow, such as borders and hairlines.
 
-Worth warning people about one trap: the browser's minimum font size setting
-will not rescue a hard-coded value, and it is switched off by default in Chrome.
+Do not fix the root font size in pixels and expect rem to follow the browser
+default. A minimum font size setting can enlarge text, but clipping or fixed
+containers can still make the result unusable. Check the rendered result.
 -->
 
 ---
@@ -231,7 +232,7 @@ num: "03"
 
 ## Non-text content
 
-<p class="nc-lede">Anything that is not text, such as an image, an icon or a chart, needs a text alternative that carries the same information.</p>
+<p class="nc-lede">Informative images, icons and charts need an equivalent text alternative. Decorative images should stay silent.</p>
 
 ---
 layout: default
@@ -258,7 +259,7 @@ then falls back to announcing the file name.
 
 The third case is the one that shows up most often in real code. It is worth
 saying clearly that marking the icon as hidden is not the mistake. Removing that
-would make the button announce its path data instead. The mistake is that
+can expose an unnamed graphic instead. The mistake is that
 nothing was put in place of the name the icon was hiding.
 -->
 
@@ -298,8 +299,8 @@ class: nc-tight nc-fill
 
 <TestIt icon="devtools">
 	<strong>Try this now:</strong> in Chrome open <em>Elements</em> and then the <em>Accessibility</em>
-	pane, or in Firefox open the <em>Accessibility</em> tab. Every row should have a name you could
-	read aloud and be understood.
+	pane, or in Firefox open the <em>Accessibility</em> tab. Every interactive control should have
+	a meaningful name. Structural elements do not all need names.
 </TestIt>
 
 <!--
@@ -339,7 +340,7 @@ class: nc-tight nc-fill
 		<h3>What the attributes do</h3>
 		<p class="nc-note" style="margin: 0">
 			<code>role</code> says what kind of thing this is. <code>aria-label</code> and
-			<code>aria-labeledby</code> give it a name. <code>aria-expanded</code>,
+			<code>aria-labelledby</code> give it a name. <code>aria-expanded</code>,
 			<code>aria-checked</code> and the rest report its current state.
 		</p>
 	</div>
@@ -386,7 +387,7 @@ class: nc-tight nc-fill
 	<div class="nc-card nc-card--bad">
 		<span class="nc-card__tag"><NcIcon name="alert" /> Leave it alone when</span>
 		<ul style="margin: 0; font-size: 0.86rem">
-			<li>There is already visible text. Point at it with <code>aria-labeledby</code> instead of duplicating it.</li>
+			<li>Native text or a connected label already names the control. Use <code>aria-labelledby</code> when you need to reference text elsewhere.</li>
 			<li>The element has no role, such as a plain <code>&lt;div&gt;</code> or <code>&lt;span&gt;</code>. The label is simply ignored.</li>
 			<li>Your label disagrees with the visible text. Voice control users say what they see, and the command stops working.</li>
 		</ul>
@@ -396,17 +397,17 @@ class: nc-tight nc-fill
 <div class="nc-test">
 	<span class="nc-test__icon"><NcIcon name="bulb" /></span>
 	<div>
-		The first rule of ARIA is not to use ARIA. A native <code>&lt;button&gt;</code>,
-		<code>&lt;label&gt;</code> or <code>&lt;nav&gt;</code> answers all three questions on its own.
+		Start with native HTML. A <code>&lt;button&gt;</code> brings keyboard behavior,
+		a connected <code>&lt;label&gt;</code> names a field, and <code>&lt;nav&gt;</code> identifies navigation.
 	</div>
 </div>
 
 <!--
-The voice control point is the one people have usually not heard. If the visible
-text reads "Save" and the aria-label reads "Save document", then saying "click
-Save" can fail outright, because the accessible name is what the command matches
-against. If you must add to a visible label, keep the visible words at the start
-of it.
+The accessible name should contain the visible label. "Save document" contains
+"Save" and meets that requirement. Replacing "Save" with "Submit changes" does
+not, and can make voice control harder. Prefer the visible words at the start.
+
+Source: https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html
 
 Also worth a sentence: aria-label does not translate unless you translate it. It
 is a string in your source, so it needs to go through the same translation
@@ -471,7 +472,7 @@ num: "06"
 
 ## Keyboard
 
-<p class="nc-lede">The cheapest accessibility test there is, and the one that catches the most. Put the mouse down and try to use the feature you just built.</p>
+<p class="nc-lede">A quick accessibility test you can do on every change. Put the mouse down and try to use the feature you just built.</p>
 
 ---
 layout: default
@@ -495,14 +496,16 @@ class: nc-tight nc-fill
 <!--
 Press Tab a few times with the defect in place, then remove it and press again.
 
-Two rules cover almost every case. Never put tabindex="-1" on something a user
-is meant to activate; its only legitimate use is a target you move focus to
-yourself, such as a dialog container or the destination of a skip link. And
-never use a positive tabindex, because it jumps the element ahead of the entire
-document and the resulting order becomes impossible to reason about.
+Do not remove ordinary buttons from the Tab order. tabindex="-1" is useful for
+programmatic focus and within composite widgets that use arrow keys to move
+between items. Avoid positive tabindex values and keep a logical reading order.
 
-This also affects more people than it first appears. Switch access, voice
-control and screen readers all drive the page through the same focus order.
+Try arrow keys in menus, tabs and other composite widgets. Keyboard support
+includes activating controls and leaving them again, with visible focus that
+sticky headers or overlays do not obscure. Screen readers also navigate by
+headings and landmarks, beyond the Tab order.
+
+Source: https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/
 -->
 
 ---
@@ -528,9 +531,9 @@ class: nc-tight nc-fill
 <LabelDemo />
 
 <TestIt icon="label">
-	<strong>How to find it:</strong> click the label text. If focus does not land in the field,
-	nothing connects the two. Confirm it in the accessibility tree, where every control should
-	report a name.
+	<strong>How to find it:</strong> click the label text. It should focus its field.
+	Then check the accessibility tree for a meaningful name: an ARIA name alone does not
+	provide the same click behavior.
 </TestIt>
 
 <div class="nc-chips">
@@ -550,8 +553,8 @@ Also worth saying: a placeholder is never a label. It disappears as soon as the
 user types, it is usually too faint to pass the contrast requirement, and
 support for announcing it is inconsistent across screen readers.
 
-If your component library provides a text field component, use it. It wires up
-the label and the description for you, and the problem stops recurring.
+Nextcloud Vue provides NcTextField. Use its documented label and helper-text
+options, then check the rendered name and description in your app.
 -->
 
 ---
@@ -598,7 +601,9 @@ station two. Viewport units defeat both.
 
 If you want a heading that flexes with the viewport and still answers to zoom,
 put a font-relative floor in the expression, for example clamp(1.9rem, 5.5vw,
-3rem). The rem bound gives zoom something to act on.
+3rem). A rem bound gives zoom something to act on, but a clamp is not a guarantee
+of 200% text enlargement. Test the full zoom range and prefer a simple rem value
+when fluid sizing would limit enlargement.
 -->
 
 ---
@@ -670,7 +675,7 @@ class: nc-tight nc-fill
 <ReflowDemo />
 
 <TestIt icon="phone">
-	<strong>How to find it:</strong> open the DevTools device toolbar at 375 × 667.
+	<strong>How to find it:</strong> open the DevTools device toolbar at 320px wide, then try 375 × 667.
 	If reading one sentence requires scrolling sideways, you have found it.
 </TestIt>
 
@@ -680,8 +685,10 @@ pixel minimum width and a row that refuses to wrap, so scroll it sideways in
 front of the audience.
 
 The target for reflow is 320 pixels, and that number is not arbitrary: 320
-pixels is what a 1280 pixel window becomes at 400% zoom. Fixing the layout
-therefore satisfies two success criteria at once.
+pixels is what a 1280 pixel window becomes at 400% zoom. The same layout fix
+helps both phone users and people who zoom. Reflow and
+text resizing still need separate checks. Tables and other content that genuinely
+require two dimensions have exceptions under the reflow criterion.
 -->
 
 ---
@@ -701,8 +708,8 @@ class: nc-tight nc-fill
 		<code>&lt;meta name="viewport" content="… maximum-scale=1, user-scalable=no"&gt;</code>
 	</p>
 	<p class="nc-note" style="margin: 0.35rem 0 0">
-		This removes the one workaround a low-vision user has for every other issue on this list.
-		iOS has ignored it for years, so in practice it only penalizes Android and desktop users.
+		This can prevent people with low vision from magnifying content on a phone.
+		Some browsers override it, so check pinch zoom on a real phone as well.
 		If a layout only holds together at a fixed scale, the layout is what needs fixing.
 	</p>
 </div>
@@ -711,10 +718,109 @@ class: nc-tight nc-fill
 Let the audience try to click both cogs. The small one is awkward even with a
 mouse, which is rather the point.
 
-24 by 24 pixels is the AA minimum and 44 by 44 is the AAA one, which is also
-what Apple and Google both ask for in their own guidelines. Ship 44 unless you
-have a specific reason not to. A visually small icon can still sit inside a
+WCAG 2.2 AA uses 24 by 24 CSS pixels, with spacing and other exceptions.
+A 24px bounding box alone is not enough to judge an irregular or circular target:
+check its actual hit area and spacing. AAA uses 44 by 44, also with exceptions.
+Aim for a generous hit area. A visually small icon can still sit inside a
 large hit area, so pad the button rather than shrinking it.
+
+Sources:
+https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
+https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html
+-->
+
+---
+layout: default
+class: nc-tight nc-fill
+---
+
+<div class="nc-eyebrow">Beyond the ten stations</div>
+
+## The complete task matters too
+
+<div class="nc-grid nc-grid--even">
+	<div class="nc-card nc-card--flat">
+		<h3>Dialogs and focus</h3>
+		<p class="nc-note">Open a dialog with the keyboard. Focus should enter it, stay inside while it is modal, and return sensibly when it closes.</p>
+		<h3>Page structure</h3>
+		<p class="nc-note">Use screen reader headings and landmarks to reach the main content. Check heading order and a skip link.</p>
+	</div>
+	<div class="nc-card nc-card--flat">
+		<h3>Errors and updates</h3>
+		<p class="nc-note">Submit an invalid form. Can you find the field and understand how to fix it? Can you hear when saving finishes?</p>
+		<h3>More than color</h3>
+		<p class="nc-note">Errors, selection and status need words or another visible cue alongside color.</p>
+	</div>
+</div>
+
+<TestIt icon="screenreader">
+	Try one complete task with a screen reader, including an error and a successful result.
+	Include people with disabilities in usability testing.
+</TestIt>
+
+<!--
+These are further checks for real apps, not extra planted exercise defects.
+A modal should support Escape and provide a visible close control. Check focus
+when the opener has disappeared too, such as after deleting a row.
+
+Connect error text to its field, for example with aria-describedby, and mark an
+invalid field with aria-invalid. Give a useful correction and preserve input.
+For routine updates such as "Saved", use a status region that exists before the
+message changes. Avoid announcing every keystroke or moving focus to a toast.
+
+Headings should describe the content in a logical hierarchy. Landmarks and a
+skip link help users bypass repeated navigation. Check the page language too.
+If the app includes media, captions and transcripts need their own review.
+
+Sources:
+https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/
+https://www.w3.org/WAI/tutorials/page-structure/
+https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html
+https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html
+https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html
+-->
+
+---
+layout: default
+class: nc-tight nc-fill
+---
+
+<div class="nc-eyebrow">Building Nextcloud apps</div>
+
+## Nextcloud components give you a head start
+
+<p class="nc-lede">
+	A lot of accessibility work has already gone into <strong>@nextcloud/vue</strong>.
+	Reusing its components brings that work into your app.
+</p>
+
+<div class="nc-grid nc-grid--even">
+	<div class="nc-card nc-card--accent">
+		<h3>Reuse the shared components</h3>
+		<p class="nc-note">Start with components such as <code>NcButton</code>, <code>NcTextField</code> and <code>NcDialog</code>. Follow their documented options and keep compatible versions up to date.</p>
+	</div>
+	<div class="nc-card nc-card--flat">
+		<h3>Check how they work in your app</h3>
+		<p class="nc-note">Supply meaningful labels. Preserve keyboard behavior, focus styles and target sizes. Test your layout and the complete user journey.</p>
+	</div>
+</div>
+
+<p class="nc-note">Documentation: <a href="https://nextcloud-vue-components.netlify.app/">Nextcloud Vue component library</a></p>
+
+<!--
+The library gives app developers the benefit of shared accessibility work.
+It reduces how much interaction behavior each app has to implement and maintain.
+This is a head start, not a guarantee that every combination is accessible.
+
+For example, use the text field's label option instead of placing an unrelated
+paragraph beside a bare input. An icon-only button still needs a meaningful
+name from the app. Custom CSS can undo a component's focus or sizing behavior.
+Report shared issues upstream so a fix can benefit other Nextcloud apps too.
+
+Sources:
+https://help.nextcloud.com/t/upcoming-changes-in-dependencies-nc-vue-dialogs/170771
+https://github.com/nextcloud-libraries/nextcloud-vue
+https://nextcloud-vue-components.netlify.app/
 -->
 
 ---
@@ -738,7 +844,7 @@ class: nc-tight nc-fill
 		{ icon: 'label', title: 'Labels', sub: 'Click the label and watch where focus lands' },
 		{ icon: 'magnify', title: 'Zoom', sub: 'Ctrl and plus, up to 400% at 1280px wide' },
 		{ icon: 'translate', title: 'Direction', sub: 'document.dir = rtl, or switch the language' },
-		{ icon: 'phone', title: 'Mobile', sub: 'Device toolbar at 375 × 667, and try to pinch' },
+		{ icon: 'phone', title: 'Mobile', sub: 'Device toolbar at 320px wide, then try pinch zoom on a phone' },
 		{ icon: 'screenreader', title: 'Screen reader', sub: 'NVDA, Orca or VoiceOver, thirty minutes once' },
 	]" />
 
@@ -750,8 +856,8 @@ class: nc-tight nc-fill
 This is the slide people photograph, so pause on it.
 
 If they take away a single habit, make it this one: Tab through your own feature
-before you open the pull request. It costs fifteen seconds and it finds more
-than any scanner will.
+before you open the pull request. Combine that with automated checks, zoom
+and a screen reader test of the complete task.
 -->
 
 ---
@@ -777,16 +883,15 @@ class: nc-tight nc-fill
 <div class="nc-grid exercise">
 	<div class="nc-stack">
 		<div class="nc-card nc-card--accent">
-			<h3>Open the application</h3>
-			<p class="exercise__link">[ link to be added ]</p>
+			<h3>Check your email</h3>
 			<p class="nc-note" style="margin: 0.4rem 0 0">
-				Sign in with the account details we hand out, then work through the interface the way
-				you would review anyone else's feature.
+				We will email you the application link and sign-in details. Open the app from that
+				email, then explore it as you would review anyone else's feature.
 			</p>
 		</div>
 		<div class="nc-card nc-card--flat">
 			<h3>These slides</h3>
-			<p class="exercise__link">[ link to be added ]</p>
+			<p class="exercise__link"><a href="https://accessibility.gvodyanov.ovh/">accessibility.gvodyanov.ovh</a></p>
 			<p class="nc-note" style="margin: 0.4rem 0 0">
 				The toolbox slide is the one you will want open beside you.
 			</p>
@@ -815,7 +920,7 @@ we have just covered.
 Also mention that the comments around the defects are written the way a
 well-meaning developer would have written them, so they are not hints.
 
-Fill in both links before the session and announce the time limit here.
+Confirm everyone has received the exercise email and announce the time limit here.
 -->
 
 ---
@@ -865,7 +970,8 @@ class: nc-tight nc-fill
 <!--
 Go one card at a time and ask who found it before explaining it.
 
-CON-1 and ALT-1 are two of the three that a scanner reports on its own.
+CON-1 and ALT-1 are examples that automated checks can flag. Results depend on
+the rendered state and the rules enabled in the tool.
 -->
 
 ---
@@ -875,11 +981,11 @@ class: nc-tight nc-fill
 
 <div class="nc-eyebrow">Answers · 6 to 10</div>
 
-## <span class="nc-muted" style="font-weight: 600">The ones no scanner reports</span>
+## <span class="nc-muted" style="font-weight: 600">The remaining five findings</span>
 
 <div class="nc-grid-3" style="gap: 0.7rem">
 	<AnswerCard id="LBL-1" title="A text input has no label, only a paragraph near it" where="SettingsDialog.vue · .settings__field" wcag="1.3.1 A · 3.3.2 A">
-		A hand-rolled paragraph and a bare input replaced the library component. It looks identical, and nothing connects the three elements.
+		A paragraph and bare input replaced the library component. The visible label and hint have no programmatic connection.
 	</AnswerCard>
 	<AnswerCard id="ZOM-1" title="A line of text is sized in vw" where="App.vue · .cleaner__tagline" wcag="1.4.4 AA">
 		<code>1.2vw</code>. Acceptable at 1280px, wrong at every other width, and completely immune to zoom.
@@ -888,21 +994,22 @@ class: nc-tight nc-fill
 		The grid was already fluid. The minimum width forces sideways scrolling on any phone, and in any narrow desktop window.
 	</AnswerCard>
 	<AnswerCard id="MOB-2" title="Pinch to zoom is disabled" where="main.ts · viewport meta" wcag="1.4.4 AA" :scanner="true">
-		<code>user-scalable=no</code>, written onto the whole page. It removes the last workaround for both ZOM-1 and MOB-1.
+		<code>user-scalable=no</code>, written onto the whole page. It can block magnification on browsers that honor it.
 	</AnswerCard>
-	<AnswerCard id="MOB-3" title="A 24px target in a row of 44px ones" where="App.vue · .cleaner__cog" wcag="2.5.8 AA">
-		Two problems in one place: the target sits at the AA floor with no spacing to spare, and <code>flex-wrap: nowrap</code> makes the row overflow instead of stacking.
+	<AnswerCard id="MOB-3" title="A 24px target in a row of 44px ones" where="App.vue · .cleaner__cog" wcag="1.4.10 AA · target: verify 2.5.8 AA">
+		A smaller target is harder to tap. AA depends on its hit area and spacing. The row also overflows because of <code>flex-wrap: nowrap</code>.
 	</AnswerCard>
 	<div class="nc-card nc-card--accent" style="display: flex; flex-direction: column; justify-content: center">
 		<p class="nc-note" style="margin: 0">
-			<strong style="color: var(--nc-blue-deep)">Three of the ten</strong><br>
-			were reported by an automated scanner. The other seven needed a person.
+			<strong style="color: var(--nc-blue-deep)">Compare both kinds of check</strong><br>
+			Which findings came from a scanner, and which appeared when you used the app?
 		</p>
 	</div>
 </div>
 
 <!--
-MOB-2 is the third and last of the three a scanner reports.
+MOB-2 can be flagged by a viewport rule. LBL-1 may also be flagged, depending on
+the accessible name the browser computes. Open the settings dialog before scanning.
 
 MOB-1 is worth dwelling on, because it also breaks a narrow desktop window and a
 split screen. It tends to get filed as a phone bug when it is not one.
@@ -922,7 +1029,8 @@ layout: cover
 </div>
 
 <p class="nc-note" style="margin-top: 1.4rem; color: rgba(255,255,255,0.75)">
-	WCAG quick reference: <strong>w3.org/WAI/WCAG22/quickref</strong>
+	Slides: <a href="https://accessibility.gvodyanov.ovh/" style="color: inherit; text-decoration: underline">accessibility.gvodyanov.ovh</a><br>
+	WCAG quick reference: <a href="https://www.w3.org/WAI/WCAG22/quickref/" style="color: inherit; text-decoration: underline">w3.org/WAI/WCAG22/quickref</a>
 </p>
 
 <!--
