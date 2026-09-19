@@ -729,7 +729,7 @@
 	background: #fff;
 }
 
-/* placeholder link on the exercise slide */
+/* presentation link on the exercise slide */
 
 .exercise__link {
 	margin: 0.35rem 0 0;
@@ -738,7 +738,7 @@
 	font-weight: 700;
 	color: var(--nc-blue-deep);
 	background: rgba(255, 255, 255, 0.65);
-	border: 1px dashed var(--nc-blue);
+	border: 1px solid var(--nc-blue);
 	border-radius: var(--nc-radius-sm);
 	padding: 0.4rem 0.6rem;
 	text-align: center;
@@ -752,4 +752,10 @@
 
 .nc-grid--even > .nc-card {
 	height: 100%;
+}
+
+.exercise__link a {
+	color: inherit;
+	text-decoration: underline;
+	overflow-wrap: anywhere;
 }

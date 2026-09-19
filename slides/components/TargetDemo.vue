@@ -54,8 +54,8 @@ function reset() {
 
 		<div class="tgt__notes">
 			<ul>
-				<li><strong>24 × 24px</strong> is the AA floor (2.5.8).</li>
-				<li><strong>44 × 44px</strong> is AAA, and what Apple and Google both ask for.</li>
+				<li><strong>24 × 24 CSS px</strong> is the AA size rule (2.5.8), with exceptions. Check hit area and spacing.</li>
+				<li><strong>44 × 44 CSS px</strong> is the AAA size rule (2.5.5), with exceptions.</li>
 				<li>A small icon can still sit in a large hit area. Pad the button, do not shrink it.</li>
 			</ul>
 		</div>

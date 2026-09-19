@@ -12,7 +12,7 @@ defineProps<{
 	<div class="ans">
 		<div class="ans__head">
 			<span class="ans__id">{{ id }}</span>
-			<span v-if="scanner" class="ans__bot" title="an automated scanner catches this">
+			<span v-if="scanner" class="ans__bot" title="automated checks can flag this, depending on rules and page state">
 				<NcIcon name="check" /> scanner
 			</span>
 		</div>

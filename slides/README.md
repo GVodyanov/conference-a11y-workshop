@@ -1,17 +1,14 @@
 # Checking if your app is accessible
 
 Slides for the web accessibility workshop, by Hamza Mahjoubi and Grigory Vodyanov.
-Built with [Slidev](https://sli.dev). 34 slides: roughly 25 minutes of walkthrough,
+Built with [Slidev](https://sli.dev). 36 slides: roughly 30 minutes of walkthrough,
 then the exercise, then the answer key.
 
 ## Before presenting
 
-Two links on **slide 30** are placeholders and need filling in:
-
-- the URL participants sign in to for the exercise,
-- the URL of these slides.
-
-Both are marked `[ link to be added ]` in `slides.md`.
+The presentation link is [accessibility.gvodyanov.ovh](https://accessibility.gvodyanov.ovh/).
+Slide 32 directs participants to their email for the exercise application link and
+sign-in details. Send that email before the exercise and announce the time limit.
 
 The exercise application is deliberately never named in the deck. It is meant to be a
 surprise, and none of the demos reuse its wording or its components, so nothing on
@@ -43,11 +40,12 @@ Sans Hebrew are bundled, so it renders identically with no network.
 
 | Slides | What |
 |---|---|
-| 1 to 4 | Cover, how the session runs, the "3 of 10" framing, the list of stations |
+| 1 to 4 | Cover, how the session runs, automated and manual testing, the list of stations |
 | 5 to 27 | Ten stations, each a divider plus one demo slide (ARIA and mobile have two) |
-| 28 | The toolbox, the slide people photograph |
-| 29 to 30 | Part two: the exercise brief and the scoring |
-| 31 to 34 | The answer key and the close |
+| 28 to 29 | Complete task checks and reusing Nextcloud Vue components |
+| 30 | The toolbox, the slide people photograph |
+| 31 to 32 | Part two: the exercise brief and the scoring |
+| 33 to 36 | The answer key and the close |
 
 The ten stations are color contrast, text size, non-text content, ARIA, reduced
 motion, keyboard, form labels, zoom, right to left, and mobile.
@@ -93,8 +91,13 @@ Right to left has no planted defect. It is in the deck as a station because it i
 item on the list that gets broken most reliably in practice, but there is nothing to
 find for it in part two.
 
-ARIA spans two slides rather than being a station of its own, since it underpins both
-`ALT-1` and `LBL-1`.
+ARIA is station four and underpins both `ALT-1` and `LBL-1`.
+
+The additional checks on slide 28 are discussion points for real apps, not extra
+planted exercise defects. The answer key distinguishes usability findings from
+WCAG failures: a 24px target needs its actual hit area and spacing checked.
+Scanner coverage depends on tool rules and the state of the interface, so the
+deck does not claim a fixed number of automatically detected defects.
 
 ## Styling
 
